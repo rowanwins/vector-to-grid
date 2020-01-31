@@ -8,7 +8,6 @@ import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import marker2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-import './coords';
 import rasterize from '../../src/main'
 import parse_georaster from "georaster"
 import GeoRasterLayer from "georaster-layer-for-leaflet"
@@ -22,31 +21,22 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow
 })
 
-const diamond = require('../../test/fixtures/almost-diamond.geojson')
+const fixture = require('../../test/fixtures/switzerland.geojson')
 
 export default {
   name: 'App',
   mounted: function () {
     
-    const layer = L.geoJSON(diamond)
     let map = window.map = L.map('app', {
       crs: L.CRS.Simple
-    }).fitBounds(layer.getBounds())  
+    })  
+    const layer = L.geoJSON(fixture).addTo(map)
+    map.fitBounds(layer.getBounds())
 
-    layer.addTo(map)
-
-    map.addControl(new L.Coordinates());
-
-    // L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    //   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    //   subdomains: 'abcd',
-    //   maxZoom: 19
-    // }).addTo(map)
-
-    const pixelSizeInMetres = 10000
+    const pixelSizeInMetres = 100
     const pixelSizeInDegrees = convertLength(pixelSizeInMetres, 'metres', 'degrees')
     console.time('rasterize')
-    const values = rasterize(diamond, {
+    const values = rasterize(fixture, {
       pixelSizeMeters: pixelSizeInMetres
     });
     console.timeEnd('rasterize')
@@ -54,8 +44,8 @@ export default {
     const noDataValue = 0
     const projection = 4326
     // These could be derived from the rasterize process which generates a bbox
-    const xmin = -4
-    const ymax = 1
+    const xmin = 5.954809204000128
+    const ymax = 47.80116607700009
     const pixelWidth = pixelSizeInDegrees
     const pixelHeight = pixelSizeInDegrees
     const metadata = { noDataValue, projection, xmin, ymax, pixelWidth, pixelHeight };

@@ -13,6 +13,7 @@ export default function vectorToGrid (geojson, options) {
     const bbox = [Infinity, Infinity, -Infinity, -Infinity]
     fillEdgeArray(geojson, allEdges, bbox)
     allEdges.sort(checkWhichSegmentIsTop)
+    console.log(bbox)
     const bboxHeight = bbox[3] - bbox[1]
     const requiredRowHeightInDegrees = Math.round(bboxHeight / pixelSizeAsDegrees)
     const outRaster = new Array(requiredRowHeightInDegrees)
