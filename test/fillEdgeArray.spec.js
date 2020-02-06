@@ -5,7 +5,6 @@ import loadJsonFile from 'load-json-file'
 import {fillEdgeArray} from '../src/fillEdgeArray'
 import {checkWhichSegmentIsTop} from '../src/compareEvents'
 
-
 const diamond = loadJsonFile.sync(path.join(__dirname, 'fixtures', 'diamond.geojson'))
 
 const edgeArray = []

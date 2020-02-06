@@ -3,10 +3,10 @@ import Edge from './Edge'
 import {checkWhichPointIsLeft} from './compareEvents'
 
 export function fillEdgeArray (geojson, edgeArray, bbox) {
-    const geom = geojson.type === 'Feature' ? geojson.geometry : geojson
 
-    let coords = geom.coordinates
     // standardise the input
+    const geom = geojson.type === 'Feature' ? geojson.geometry : geojson
+    let coords = geom.coordinates
     if (geom.type === 'Polygon') coords = [coords]
 
     for (let i = 0; i < coords[0].length; i++) {

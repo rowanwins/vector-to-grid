@@ -2,8 +2,8 @@ import {checkWhichSegmentIsTop} from './compareEvents'
 import {fillEdgeArray} from './fillEdgeArray'
 import Edge from './Edge'
 import Point from './Point'
-import {convertLength} from '@turf/helpers'
-import {testSegmentIntersect} from './utils'
+import convertLength from './convertLength'
+import getEdgeIntersection from './getEdgeIntersection'
 // import {debugIntersections} from './debug'
 
 export default function vectorToGrid (geojson, options) {
@@ -13,6 +13,7 @@ export default function vectorToGrid (geojson, options) {
     const bbox = [Infinity, Infinity, -Infinity, -Infinity]
     fillEdgeArray(geojson, allEdges, bbox)
     allEdges.sort(checkWhichSegmentIsTop)
+
     const bboxHeight = bbox[3] - bbox[1]
     const requiredRowHeightInDegrees = Math.round(bboxHeight / pixelSizeAsDegrees)
     const outRaster = new Array(requiredRowHeightInDegrees)
@@ -24,12 +25,13 @@ export default function vectorToGrid (geojson, options) {
     const activeEdges = []
     let indexOfLastActiveEdgeAdded = 0
     for (let i = 0; i < outRaster.length; i++) {
-        // A Uint8Array initialises as 0 which is good for our null value
-        const outRow = new Uint8Array(requireRowWidth)
-        outRaster[i] = outRow
         const rowMinY = bbox[3] - (pixelSizeAsDegrees * i)
 
-        // first cull any active edges that are no longer active
+        // A Uint8Array initialises as 0 which is good for our null value
+        const outRow = new Uint8Array(requireRowWidth)
+
+        // first cull anything in active edges that is no longer active
+        // This is probably a bit expensive particularly with larger grids
         for (let ii = 0; ii < activeEdges.length; ii++) {
             const edge = activeEdges[ii]
             if (!edge.intersectsRow(rowMinY)) {
@@ -42,29 +44,31 @@ export default function vectorToGrid (geojson, options) {
         for (ii; ii < allEdges.length; ii++) {
             const edge = allEdges[ii]
             if (edge.intersectsRow(rowMinY)) {
+                // I wonder if I could flag that this edge is valid until row...
+                // That might make the culling of edges quicker..
                 activeEdges.push(edge)
-            } else if (edge.pointWithMinY.p.y < rowMinY) {
-                break
-            }
+            } else if (edge.pointWithMinY.p.y < rowMinY) break
         }
         indexOfLastActiveEdgeAdded = ii
 
+        // This edge represents the row of the raster
         const fauxEdge = new Edge(new Point([bbox[0], rowMinY]), new Point([bbox[2], rowMinY]))
 
-        // This will be an array of intersections points
+        // Stores the intersections points
         const intersections = []
         for (let ii = 0; ii < activeEdges.length; ii++) {
-            intersections.push(testSegmentIntersect(activeEdges[ii], fauxEdge))
+            intersections.push(getEdgeIntersection(activeEdges[ii], fauxEdge))
         }
-        intersections.sort(function (a, b) {
-            return a - b
-        })
+        // Sort the intersection points from left to right
+        intersections.sort(function (a, b) { return a - b })
+
+        // And then we modify the values of the row output
         for (let ii = 0; ii < intersections.length; ii = ii + 2) {
             const requiredWidthOfCells = Math.round((intersections[ii + 1] - intersections[ii]) / pixelSizeAsDegrees)
-            const arrayToFill = new Uint8Array(requiredWidthOfCells).fill(1)
             const startPosition = Math.round(interpolate(intersections[ii], 0, requireRowWidth, bbox[0], bbox[2]))
-            outRow.set(arrayToFill, startPosition)
+            outRow.set(new Uint8Array(requiredWidthOfCells).fill(1), startPosition)
         }
+        outRaster[i] = outRow
     }
 
     return outRaster
