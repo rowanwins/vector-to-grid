@@ -1,38 +1,16 @@
-export function debugEventAndSegments (event, segments) {
+export function debugIntersections (rowMinY, intersections) {
     if (process.env.NODE_ENV !== 'development') return;
     const map = window.map;
-    const eLayer = L.circleMarker([event.y, event.x]).addTo(map);
+    const l1 = L.circleMarker([rowMinY, intersections[0]], {
+        color: 'green'
+    }).addTo(map);
+    const l2 = L.circleMarker([rowMinY, intersections[1]], {
+        color: 'red'
+    }).addTo(map);
 
-    const lines = L.layerGroup([]).addTo(map);
-
-
-    segments.forEach(function (seg) {
-        L.polyline([
-            [seg.leftSweepEvent.p.y, seg.leftSweepEvent.p.x],
-            [seg.rightSweepEvent.p.y, seg.rightSweepEvent.p.x]
-        ], {color: 'grey'}).addTo(lines);
-    });
 
     debugger
 
-    eLayer.remove();
-    lines.remove();
-}
-
-export function debugRemovingSegment (event, seg) {
-    if (process.env.NODE_ENV !== 'development') return;
-    const map = window.map;
-    const eLayer = L.circleMarker([event.y, event.x], {color: 'red'}).addTo(map);
-
-    const lines = L.layerGroup([]).addTo(map);
-
-    L.polyline([
-        [seg.leftSweepEvent.p.y, seg.leftSweepEvent.p.x],
-        [seg.rightSweepEvent.p.y, seg.rightSweepEvent.p.x]
-    ], {color: 'grey'}).addTo(lines);
-
-    debugger
-
-    eLayer.remove();
-    lines.remove();
+    l1.remove();
+    l2.remove();
 }

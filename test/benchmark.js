@@ -1,8 +1,9 @@
 const path = require('path')
 const Benchmark = require('benchmark')
 const loadJsonFile = require('load-json-file')
+const rasterize = require('../dist/vectorToGrid')
 
-const switzerland = loadJsonFile.sync(path.join(__dirname, 'fixtures', 'simple', 'switzerland.geojson'))
+const switzerland = loadJsonFile.sync(path.join(__dirname, 'fixtures', 'switzerland.geojson'))
 
 const options = {
     onStart () { console.log(this.name) },
@@ -13,10 +14,12 @@ const options = {
     }
 }
 
-
 const suite = new Benchmark.Suite('rasterize', options)
 suite
     .add('switzerland', function () {
+        rasterize(switzerland, {
+            pixelSizeMeters: 1000
+        });
     })
     .run()
 

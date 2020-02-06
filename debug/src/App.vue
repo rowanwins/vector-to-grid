@@ -34,7 +34,6 @@ export default {
     map.fitBounds(layer.getBounds())
 
     const pixelSizeInMetres = 100
-    const pixelSizeInDegrees = convertLength(pixelSizeInMetres, 'metres', 'degrees')
     console.time('rasterize')
     const values = rasterize(fixture, {
       pixelSizeMeters: pixelSizeInMetres
@@ -46,6 +45,7 @@ export default {
     // These could be derived from the rasterize process which generates a bbox
     const xmin = 5.954809204000128
     const ymax = 47.80116607700009
+    const pixelSizeInDegrees = convertLength(pixelSizeInMetres, 'metres', 'degrees')
     const pixelWidth = pixelSizeInDegrees
     const pixelHeight = pixelSizeInDegrees
     const metadata = { noDataValue, projection, xmin, ymax, pixelWidth, pixelHeight };
