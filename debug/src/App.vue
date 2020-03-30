@@ -33,30 +33,29 @@ export default {
     const layer = L.geoJSON(fixture).addTo(map)
     map.fitBounds(layer.getBounds())
 
-    const pixelSizeInMetres = 100
+    const pixelSizeInMetres = 1000
     console.time('rasterize')
-    const values = rasterize(fixture, {
+    const grid = rasterize(fixture, {
       pixelSizeMeters: pixelSizeInMetres
     });
     console.timeEnd('rasterize')
 
     const noDataValue = 0
     const projection = 4326
-    // These could be derived from the rasterize process which generates a bbox
-    const xmin = 5.954809204000128
-    const ymax = 47.80116607700009
+
+    const xmin = grid.bbox[0]
+    const ymax = grid.bbox[3]
     const pixelSizeInDegrees = convertLength(pixelSizeInMetres, 'metres', 'degrees')
     const pixelWidth = pixelSizeInDegrees
     const pixelHeight = pixelSizeInDegrees
     const metadata = { noDataValue, projection, xmin, ymax, pixelWidth, pixelHeight };
 
-    parse_georaster([values], metadata).then(georaster => {
+    parse_georaster([grid.grid], metadata).then(georaster => {
       console.log("georaster:", georaster);
       var layer2 = new GeoRasterLayer({
           georaster: georaster,
           opacity: 0.7,
-          pixelValuesToColorFn: values => values[0] === 0 ? 'red' : '#0000ff',
-          resolution: 64 // optional parameter for adjusting display resolution
+          pixelValuesToColorFn: values => values[0] === 0 ? 'red' : '#0000ff'
       });
       layer2.addTo(map);
     })
