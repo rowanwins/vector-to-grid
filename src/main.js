@@ -71,7 +71,10 @@ export default function vectorToGrid (geojson, options) {
         outRaster[i] = outRow
     }
 
-    return outRaster
+    return {
+        bbox: bbox,
+        grid: outRaster
+    }
 }
 
 function interpolate(fauxY, minAllowed, maxAllowed, min, max) {
